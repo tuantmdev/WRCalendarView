@@ -95,7 +95,7 @@ class MainCont: UIViewController {
         }
         
         navigationBarMenu.menuCells = [firstCell, secondCell]
-        navigationBarMenu.selectMenuCell(firstCell)
+        navigationBarMenu.selectMenuCell(secondCell)
         
         // For a simple gray overlay in background
         navigationBarMenu.backgroundView = UIView(frame: navigationBarMenu.bounds)
