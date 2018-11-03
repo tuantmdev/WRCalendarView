@@ -52,6 +52,7 @@ class MainCont: UIViewController {
     func setupCalendarData() {
         weekView.setCalendarDate(Date())
         weekView.delegate = self
+        weekView.hourHeight = 100.0
     }
     
     // MARK: - DropDownMenu

@@ -49,6 +49,13 @@ public class WRWeekView: UIView {
         }
     }
     
+    public var hourHeight: CGFloat = 50.0 {
+        didSet {
+            flowLayout.hourHeight = hourHeight
+            updateView()
+        }
+    }
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
