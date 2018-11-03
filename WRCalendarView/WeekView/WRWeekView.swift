@@ -42,6 +42,13 @@ public class WRWeekView: UIView {
         }
     }
     
+    public var hourGridDivisionValue: HourGridDivision = .minutes_15 {
+        didSet {
+            flowLayout.hourGridDivisionValue = hourGridDivisionValue
+            updateView()
+        }
+    }
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
