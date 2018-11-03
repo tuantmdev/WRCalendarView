@@ -23,7 +23,6 @@ class MainCont: UIViewController {
         
         let title = prepareNavigationBarMenuTitleView()
         prepareNavigationBarMenu(title)
-        updateMenuContentOffsets()
         
         //add today button
         let rightButton = UIBarButtonItem(title: "Today", style: .plain, target: self, action: #selector(moveToToday))
@@ -42,6 +41,7 @@ class MainCont: UIViewController {
         super.viewDidAppear(animated)
         
         navigationBarMenu.container = view
+        updateMenuContentInsets()
     }
     
     func moveToToday() {
@@ -96,15 +96,20 @@ class MainCont: UIViewController {
         navigationBarMenu.menuCells = [firstCell, secondCell]
         navigationBarMenu.selectMenuCell(firstCell)
         
-        // If we set the container to the controller view, the value must be set
-        // on the hidden content offset (not the visible one)
-        navigationBarMenu.visibleContentOffset =
-            navigationController!.navigationBar.frame.size.height + statusBarHeight()
-        
         // For a simple gray overlay in background
         navigationBarMenu.backgroundView = UIView(frame: navigationBarMenu.bounds)
         navigationBarMenu.backgroundView!.backgroundColor = UIColor.black
         navigationBarMenu.backgroundAlpha = 0.7
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        coordinator.animate(alongsideTransition: { _ in
+            // If we put this only in -viewDidLayoutSubviews, menu animation is
+            // messed up when selecting an item
+            self.updateMenuContentInsets()
+        }, completion: nil)
     }
     
     func willToggleNavigationBarMenu(_ sender: DropDownTitleView) {
@@ -115,9 +120,20 @@ class MainCont: UIViewController {
         }
     }
     
-    func updateMenuContentOffsets() {
-        navigationBarMenu.visibleContentOffset =
-            navigationController!.navigationBar.frame.size.height + statusBarHeight()
+    func updateMenuContentInsets() {
+        var visibleContentInsets: UIEdgeInsets
+        
+        if #available(iOS 11, *) {
+            visibleContentInsets = view.safeAreaInsets
+        } else {
+            visibleContentInsets =
+                UIEdgeInsets(top: navigationController!.navigationBar.frame.size.height + statusBarHeight(),
+                             left: 0,
+                             bottom: navigationController!.toolbar.frame.size.height,
+                             right: 0)
+        }
+        
+        navigationBarMenu.visibleContentInsets = visibleContentInsets
     }
     
     func didToggleNavigationBarMenu(_ sender: DropDownTitleView) {
