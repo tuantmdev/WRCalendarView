@@ -53,6 +53,8 @@ class MainCont: UIViewController {
         weekView.setCalendarDate(Date())
         weekView.delegate = self
         weekView.hourHeight = 100.0
+        weekView.hourGridDivisionValue = .minutes_15
+        weekView.dayGridDivisionValue = 5
     }
     
     // MARK: - DropDownMenu

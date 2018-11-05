@@ -24,8 +24,10 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
     var columnHeaderHeight: CGFloat!
     var sectionWidth: CGFloat!
     var hourGridDivisionValue: HourGridDivision!
+    var dayGridDivisionValue: Int = 1
     
     var minuteHeight: CGFloat { return hourHeight / 60 }
+    var maxColumnWidth: CGFloat { return sectionWidth / CGFloat(dayGridDivisionValue) }
     
     let displayHeaderBackgroundAtOrigin = true
     let gridThickness: CGFloat = UIScreen.main.scale == 2 ? 0.5 : 1.0
@@ -297,8 +299,10 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
             let itemMaxX = nearbyint(itemMinX + (sectionWidth - (cellMargin.left + cellMargin.right)))
             let itemMaxY = nearbyint(endHourY + endMinuteY + calendarStartY - cellMargin.bottom)
             
+            let width = min(itemMaxX - itemMinX, maxColumnWidth)
+            
             attributes.frame = CGRect(x: itemMinX, y: itemMinY,
-                                      width: itemMaxX - itemMinX,
+                                      width: width,
                                       height: itemMaxY - itemMinY)
             attributes.zIndex = zIndexForElementKind(SupplementaryViewKinds.defaultCell)
             
@@ -327,15 +331,17 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
     func layoutVerticalGridLinesAttributes(section: Int, sectionX: CGFloat, calendarGridMinY: CGFloat, sectionHeight: CGFloat) {
         var attributes = UICollectionViewLayoutAttributes()
         
-        (attributes, verticalGridlineAttributes) =
-            layoutAttributesForDecorationView(at: IndexPath(item: 0, section: section),
-                                              ofKind: DecorationViewKinds.verticalGridline,
-                                              withItemCache: verticalGridlineAttributes)
-        attributes.frame = CGRect(x: nearbyint(sectionX - gridThickness / 2.0),
-                                  y: calendarGridMinY,
-                                  width: gridThickness,
-                                  height: sectionHeight)
-        attributes.zIndex = zIndexForElementKind(DecorationViewKinds.verticalGridline)
+        for index in 0...dayGridDivisionValue {
+            (attributes, verticalGridlineAttributes) =
+                layoutAttributesForDecorationView(at: IndexPath(item: index, section: section),
+                                                  ofKind: DecorationViewKinds.verticalGridline,
+                                                  withItemCache: verticalGridlineAttributes)
+            attributes.frame = CGRect(x: nearbyint(sectionX - gridThickness / 2.0 + CGFloat(index) * sectionWidth / CGFloat(dayGridDivisionValue)),
+                                      y: calendarGridMinY,
+                                      width: gridThickness,
+                                      height: sectionHeight)
+            attributes.zIndex = zIndexForElementKind(DecorationViewKinds.verticalGridline)
+        }
     }
     
     func layoutHorizontalGridLinesAttributes(calendarStartX: CGFloat, calendarStartY: CGFloat) {
@@ -521,7 +527,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
                 
                 for currentY in stride(from: minY, to: maxY, by: 1) {
                     var numberItemsForCurrentY = 0
-                    
+
                     for overlappingItemAttributes in overlappingItems {
                         if currentY >= overlappingItemAttributes.frame.minY &&
                             currentY < overlappingItemAttributes.frame.maxY {
@@ -534,7 +540,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
                 }
                 
                 // Adjust the items to have a width of the section size divided by the number of divisions needed
-                let divisionWidth = nearbyint(sectionWidth / CGFloat(divisions))
+                let divisionWidth = min(nearbyint(sectionWidth / CGFloat(divisions)), maxColumnWidth) 
                 var dividedAttributes = [UICollectionViewLayoutAttributes]()
                 
                 for divisionAttributes in overlappingItems {

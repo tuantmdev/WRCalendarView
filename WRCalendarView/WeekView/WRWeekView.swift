@@ -38,6 +38,11 @@ public class WRWeekView: UIView {
     public var calendarType: CalendarType = .week {
         didSet {
             isFirst = true
+            if calendarType == .week {
+                flowLayout.dayGridDivisionValue = 1
+            } else {
+                flowLayout.dayGridDivisionValue = dayGridDivisionValue
+            }
             updateView()
         }
     }
@@ -45,6 +50,17 @@ public class WRWeekView: UIView {
     public var hourGridDivisionValue: HourGridDivision = .minutes_15 {
         didSet {
             flowLayout.hourGridDivisionValue = hourGridDivisionValue
+            updateView()
+        }
+    }
+    
+    public var dayGridDivisionValue: Int = 1 {
+        didSet {
+            if calendarType == .week {
+                flowLayout.dayGridDivisionValue = 1
+            } else {
+                flowLayout.dayGridDivisionValue = dayGridDivisionValue
+            }
             updateView()
         }
     }
