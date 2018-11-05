@@ -44,7 +44,7 @@ class MainCont: UIViewController {
         updateMenuContentInsets()
     }
     
-    func moveToToday() {
+    @objc func moveToToday() {
         weekView.setCalendarDate(Date(), animated: true)
     }
     
@@ -115,7 +115,7 @@ class MainCont: UIViewController {
         }, completion: nil)
     }
     
-    func willToggleNavigationBarMenu(_ sender: DropDownTitleView) {
+    @objc func willToggleNavigationBarMenu(_ sender: DropDownTitleView) {
         if sender.isUp {
             navigationBarMenu.hide()
         } else {
@@ -139,10 +139,10 @@ class MainCont: UIViewController {
         navigationBarMenu.visibleContentInsets = visibleContentInsets
     }
     
-    func didToggleNavigationBarMenu(_ sender: DropDownTitleView) {
+    @objc func didToggleNavigationBarMenu(_ sender: DropDownTitleView) {
     }
     
-    func choose(_ sender: AnyObject) {
+    @objc func choose(_ sender: AnyObject) {
         if let sender = sender as? DropDownMenuCell {
             titleView.title = sender.textLabel!.text
         

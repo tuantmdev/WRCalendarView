@@ -17,12 +17,12 @@ class WRCurrentTimeIndicator: UICollectionReusableView {
         dateFormatter.dateFormat = "HH:mm"
         
         let timer = Timer(fireAt: Date() + 1.minutes, interval: TimeInterval(60), target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
-        RunLoop.current.add(timer, forMode: .defaultRunLoopMode)
+        RunLoop.current.add(timer, forMode: RunLoop.Mode.default)
         
         updateTimer()
     }
     
-    func updateTimer() {
+    @objc func updateTimer() {
         timeLbl.text = dateFormatter.string(from: Date())
     }
 }
