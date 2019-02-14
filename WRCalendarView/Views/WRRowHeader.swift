@@ -20,7 +20,7 @@ class WRRowHeader: UICollectionReusableView {
     var date: Date? {
         didSet {
             if let date = date,
-                calendar.component(.hour, from: date) != 0 && calendar.component(.hour, from: date) != 24 {
+                (calendar.component(.hour, from: date) != 0 && calendar.component(.hour, from: date) != 24) || calendar.component(.minute, from: date) != 0 {
                 timeLbl.text = dateFormatter.string(from: date)
             } else {
                 timeLbl.text = ""

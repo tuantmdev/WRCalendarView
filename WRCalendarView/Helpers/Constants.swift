@@ -37,7 +37,7 @@ public enum CalendarType {
 }
 
 public enum HourGridDivision: Int {
-    case none = 0
+    case none = 60
     case minutes_5 = 5
     case minutes_10 = 10
     case minutes_15 = 15

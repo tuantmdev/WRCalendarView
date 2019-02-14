@@ -231,12 +231,13 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
         attributes.zIndex = zIndexForElementKind(DecorationViewKinds.cornerHeader)
 
         // row header
-        for rowHeaderIndex in 0...23 {
+        let numberOfDivisions = 60 / hourGridDivisionValue.rawValue
+        for rowHeaderIndex in 0..<24 * numberOfDivisions {
             (attributes, rowHeaderAttributes) =
                 layoutAttributesForSupplemantaryView(at: IndexPath(item: rowHeaderIndex, section: 0),
                                                      ofKind: SupplementaryViewKinds.rowHeader,
                                                      withItemCache: rowHeaderAttributes)
-            let rowHeaderMinY = calendarContentMinY + hourHeight * CGFloat(rowHeaderIndex) - nearbyint(hourHeight / 2.0)
+            let rowHeaderMinY = calendarContentMinY + hourHeight * CGFloat(rowHeaderIndex) / CGFloat(numberOfDivisions) - nearbyint(hourHeight / 2.0)
             attributes.frame = CGRect(x: rowHeaderMinX,
                                       y: rowHeaderMinY,
                                       width: rowHeaderWidth,
@@ -673,8 +674,10 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
     
     // MARK: - Dates
     func dateForTimeRowHeader(at indexPath: IndexPath) -> Date {
+        let numberOfDivisions = 60 / hourGridDivisionValue.rawValue
         var components = daysForSection(indexPath.section)
-        components.hour = indexPath.item
+        components.hour = indexPath.item / numberOfDivisions
+        components.minute = indexPath.item % numberOfDivisions * hourGridDivisionValue.rawValue
         return Calendar.current.date(from: components)!
     }
     
