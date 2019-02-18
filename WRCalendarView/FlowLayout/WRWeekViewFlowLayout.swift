@@ -489,7 +489,11 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
         var adjustedAttributes = Set<UICollectionViewLayoutAttributes>()
         var sectionZ = minCellZ
         
-        for itemAttributes in sectionItemAttributes {
+        let attrs = sectionItemAttributes.sorted { (lhs, rhs) -> Bool in
+            return lhs.frame.minY < rhs.frame.minY
+        }
+        
+        for itemAttributes in attrs {
             // If an item's already been adjusted, move on to the next one
             if adjustedAttributes.contains(itemAttributes) {
                 continue
@@ -499,7 +503,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
             var overlappingItems = [UICollectionViewLayoutAttributes]()
             let itemFrame = itemAttributes.frame
             
-            overlappingItems.append(contentsOf: sectionItemAttributes.filter {
+            overlappingItems.append(contentsOf: attrs.filter {
                 if $0 != itemAttributes {
                     return itemFrame.intersects($0.frame)
                 } else {
@@ -528,7 +532,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
                 
                 for currentY in stride(from: minY, to: maxY, by: 1) {
                     var numberItemsForCurrentY = 0
-
+                    
                     for overlappingItemAttributes in overlappingItems {
                         if currentY >= overlappingItemAttributes.frame.minY &&
                             currentY < overlappingItemAttributes.frame.maxY {
@@ -541,7 +545,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
                 }
                 
                 // Adjust the items to have a width of the section size divided by the number of divisions needed
-                let divisionWidth = min(nearbyint(sectionWidth / CGFloat(divisions)), maxColumnWidth) 
+                let divisionWidth = min(nearbyint(sectionWidth / CGFloat(divisions)), maxColumnWidth)
                 var dividedAttributes = [UICollectionViewLayoutAttributes]()
                 
                 for divisionAttributes in overlappingItems {
@@ -570,7 +574,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
                         dividedAttributes.append(divisionAttributes)
                         adjustedAttributes.insert(divisionAttributes)
                     }
-                 }
+                }
             }
         }
     }
