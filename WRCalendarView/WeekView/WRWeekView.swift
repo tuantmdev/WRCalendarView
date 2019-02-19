@@ -470,6 +470,18 @@ extension WRWeekView: WRWeekViewFlowLayoutDelegate {
             fatalError()
         }
     }
+    
+    func collectionView(_ collectionView: UICollectionView, layout: WRWeekViewFlowLayout, positionForItemAtIndexPath indexPath: IndexPath) -> Int {
+        let date = flowLayout.dateForColumnHeader(at: indexPath)
+        let key = dateFormatter.string(from: date)
+        
+        if let events = eventBySection[key] {
+            let event = events[indexPath.item]
+            return event.position
+        } else {
+            fatalError()
+        }
+    }
 }
 
 // for groupBy

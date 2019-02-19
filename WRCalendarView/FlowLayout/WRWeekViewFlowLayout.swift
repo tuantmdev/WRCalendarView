@@ -13,6 +13,7 @@ protocol WRWeekViewFlowLayoutDelegate {
     func collectionView(_ collectionView: UICollectionView, layout: WRWeekViewFlowLayout, dayForSection section: Int) -> Date
     func collectionView(_ collectionView: UICollectionView, layout: WRWeekViewFlowLayout, startTimeForItemAtIndexPath indexPath: IndexPath) -> Date
     func collectionView(_ collectionView: UICollectionView, layout: WRWeekViewFlowLayout, endTimeForItemAtIndexPath indexPath: IndexPath) -> Date
+    func collectionView(_ collectionView: UICollectionView, layout: WRWeekViewFlowLayout, positionForItemAtIndexPath indexPath: IndexPath) -> Int
 }
 
 class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
@@ -58,6 +59,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
     var cachedCurrentTimeComponents = Dictionary<Int, DateComponents>()
     var cachedStartTimeDateComponents = Dictionary<IndexPath, DateComponents>()
     var cachedEndTimeDateComponents = Dictionary<IndexPath, DateComponents>()
+    var cachedPositions = Dictionary<IndexPath, Int>()
     var registeredDecorationClasses = Dictionary<String, AnyClass>()
     var needsToPopulateAttributesForAllSections = true
     
@@ -283,6 +285,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
             
             let itemStartTime = startTimeForIndexPath(itemIndexPath)
             let itemEndTime = endTimeForIndexPath(itemIndexPath)
+            let position = positionForIndexPath(itemIndexPath)
             let startHourY = CGFloat(itemStartTime.hour!) * hourHeight
             let startMinuteY = CGFloat(itemStartTime.minute!) * minuteHeight
             
@@ -295,16 +298,29 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
                 endHourY = CGFloat(itemEndTime.hour!) * hourHeight
             }
             
-            let itemMinX = nearbyint(sectionX + cellMargin.left)
-            let itemMinY = nearbyint(startHourY + startMinuteY + calendarStartY + cellMargin.top)
-            let itemMaxX = nearbyint(itemMinX + (sectionWidth - (cellMargin.left + cellMargin.right)))
-            let itemMaxY = nearbyint(endHourY + endMinuteY + calendarStartY - cellMargin.bottom)
+            if dayGridDivisionValue == 1 {
+                // Weekly mode
+                let itemMinX = nearbyint(sectionX + cellMargin.left)
+                let itemMinY = nearbyint(startHourY + startMinuteY + calendarStartY + cellMargin.top)
+                let itemMaxX = nearbyint(itemMinX + (sectionWidth - (cellMargin.left + cellMargin.right)))
+                let itemMaxY = nearbyint(endHourY + endMinuteY + calendarStartY - cellMargin.bottom)
+                
+                let width = min(itemMaxX - itemMinX, maxColumnWidth)
+                
+                attributes.frame = CGRect(x: itemMinX, y: itemMinY,
+                                          width: width,
+                                          height: itemMaxY - itemMinY)
+            } else {
+                let width = maxColumnWidth
+                let itemMinX = nearbyint(sectionX + cellMargin.left + CGFloat(position) * width)
+                let itemMinY = nearbyint(startHourY + startMinuteY + calendarStartY + cellMargin.top)
+                let itemMaxY = nearbyint(endHourY + endMinuteY + calendarStartY - cellMargin.bottom)
+                
+                attributes.frame = CGRect(x: itemMinX, y: itemMinY,
+                                          width: width,
+                                          height: itemMaxY - itemMinY)
+            }
             
-            let width = min(itemMaxX - itemMinX, maxColumnWidth)
-            
-            attributes.frame = CGRect(x: itemMinX, y: itemMinY,
-                                      width: width,
-                                      height: itemMaxY - itemMinY)
             attributes.zIndex = zIndexForElementKind(SupplementaryViewKinds.defaultCell)
             
             sectionItemAttributes.append(attributes)
@@ -485,15 +501,27 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
         }
     }
     
+    func getRangeOfAttributes(_ attributes: [UICollectionViewLayoutAttributes]) -> (CGFloat, CGFloat) {
+        var minY = CGFloat.greatestFiniteMagnitude
+        var maxY = CGFloat.leastNormalMagnitude
+        
+        for attr in attributes {
+            if attr.frame.minY < minY {
+                minY = attr.frame.minY
+            }
+            if attr.frame.maxY > maxY {
+                maxY = attr.frame.maxY
+            }
+        }
+        
+        return (minY, maxY)
+    }
+    
     func adjustItemsForOverlap(_ sectionItemAttributes: [UICollectionViewLayoutAttributes], inSection: Int, sectionMinX: CGFloat) {
         var adjustedAttributes = Set<UICollectionViewLayoutAttributes>()
         var sectionZ = minCellZ
         
-        let attrs = sectionItemAttributes.sorted { (lhs, rhs) -> Bool in
-            return lhs.frame.minY < rhs.frame.minY
-        }
-        
-        for itemAttributes in attrs {
+        for itemAttributes in sectionItemAttributes {
             // If an item's already been adjusted, move on to the next one
             if adjustedAttributes.contains(itemAttributes) {
                 continue
@@ -503,7 +531,7 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
             var overlappingItems = [UICollectionViewLayoutAttributes]()
             let itemFrame = itemAttributes.frame
             
-            overlappingItems.append(contentsOf: attrs.filter {
+            overlappingItems.append(contentsOf: sectionItemAttributes.filter {
                 if $0 != itemAttributes {
                     return itemFrame.intersects($0.frame)
                 } else {
@@ -657,6 +685,18 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
         } else {
             if let date = delegate?.collectionView(collectionView!, layout: self, endTimeForItemAtIndexPath: indexPath) {
                 return Calendar.current.dateComponents([.day, .hour, .minute], from: date)
+            } else {
+                fatalError()
+            }
+        }
+    }
+    
+    func positionForIndexPath(_ indexPath: IndexPath) -> Int {
+        if cachedPositions[indexPath] != nil {
+            return cachedPositions[indexPath]!
+        } else {
+            if let position = delegate?.collectionView(collectionView!, layout: self, positionForItemAtIndexPath: indexPath) {
+                return position
             } else {
                 fatalError()
             }
