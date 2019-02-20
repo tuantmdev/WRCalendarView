@@ -326,7 +326,10 @@ class WRWeekViewFlowLayout: UICollectionViewFlowLayout {
             sectionItemAttributes.append(attributes)
         }
         
-        adjustItemsForOverlap(sectionItemAttributes, inSection: section, sectionMinX: sectionX)
+        if dayGridDivisionValue == 1 {
+            // Only adjust in weekly mode
+            adjustItemsForOverlap(sectionItemAttributes, inSection: section, sectionMinX: sectionX)
+        }
     }
     
     func layoutTodayBackgroundAttributes(section: Int, sectionX: CGFloat, calendarStartY: CGFloat, sectionHeight: CGFloat) {
