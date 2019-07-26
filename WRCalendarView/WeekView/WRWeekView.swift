@@ -112,7 +112,6 @@ public class WRWeekView: UIView {
         addGestureRecognizer(tapGesture)
         
         let longPressGesture: UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler(gesture:)))
-        longPressGesture.minimumPressDuration = 0.5
         longPressGesture.delaysTouchesBegan = true
         addGestureRecognizer(longPressGesture)
     }
@@ -181,6 +180,7 @@ public class WRWeekView: UIView {
             let key = dateFormatter.string(from: date)
             
             if let events = eventBySection[key], indexPath.item < events.count {
+                print("long pressed")
                 let event = events[indexPath.item]
                 delegate?.longPressOnEvent(event)
             }
