@@ -13,6 +13,7 @@ public protocol WRWeekViewDelegate: NSObjectProtocol  {
     func view(startDate: Date, interval: Int)
     func tap(date: Date)
     func selectEvent(_ event: WREvent)
+    func longPressOnEvent(_ event: WREvent)
 }
 
 public class WRWeekView: UIView {
@@ -109,6 +110,11 @@ public class WRWeekView: UIView {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapHandler(_:)))
         tapGesture.cancelsTouchesInView = false
         addGestureRecognizer(tapGesture)
+        
+        let longPressGesture: UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler(gesture:)))
+        longPressGesture.minimumPressDuration = 0.5
+        longPressGesture.delaysTouchesBegan = true
+        addGestureRecognizer(longPressGesture)
     }
     
     func registerViewClasses() {
@@ -161,6 +167,26 @@ public class WRWeekView: UIView {
         components.minute = minute
         
         delegate?.tap(date: Calendar.current.date(from: components)!)
+    }
+    
+    @objc func longPressHandler(gesture : UILongPressGestureRecognizer!) {
+        if gesture.state != .ended {
+            return
+        }
+        
+        let p = gesture.location(in: collectionView)
+        
+        if let indexPath = collectionView.indexPathForItem(at: p) {
+            let date = flowLayout.dateForColumnHeader(at: indexPath)
+            let key = dateFormatter.string(from: date)
+            
+            if let events = eventBySection[key], indexPath.item < events.count {
+                let event = events[indexPath.item]
+                delegate?.longPressOnEvent(event)
+            }
+        } else {
+            print("couldn't find index path")
+        }
     }
     
     // MARK: - public actions
