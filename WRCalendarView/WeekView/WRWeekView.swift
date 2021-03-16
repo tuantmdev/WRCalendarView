@@ -25,7 +25,6 @@ public class WRWeekView: UIView {
     var initDate: Date!
     var startDate: Date!
     var initialContentOffset = CGPoint.zero
-    var initialTimeOffset = Date()
     var currentPage: Int!
     var loading = false
     var isFirst = true
@@ -34,6 +33,8 @@ public class WRWeekView: UIView {
     var calendarDate: Date!
     var events = [WREvent]()
     var eventBySection = [String: [WREvent]]()
+    
+    public var initialTimeOffset = Date()
     
     public weak var delegate: WRWeekViewDelegate?
     
