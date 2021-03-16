@@ -25,6 +25,7 @@ public class WRWeekView: UIView {
     var initDate: Date!
     var startDate: Date!
     var initialContentOffset = CGPoint.zero
+    var initialTimeOffset = Date()
     var currentPage: Int!
     var loading = false
     var isFirst = true
@@ -275,7 +276,7 @@ public class WRWeekView: UIView {
             
             // 처음 화면이 보여지거나 schedule type이 바뀔때만 현재 시간 보여줌
             if self.isFirst {
-                self.flowLayout.scrollCollectionViewToCurrentTime()
+                self.flowLayout.scrollCollectionViewToTime(self.initialTimeOffset)
                 self.isFirst = false
             }
         }
